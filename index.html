@@ -13,16 +13,17 @@
 </head>
 <body>
   <div class="container">
-    <h2>🔓 Vulnerable MCP Demo</h2>
-    <p>This simulates a client sending <b>user-controlled metadata (MCP)</b> to an LLM API. You can escalate your privileges by editing the MCP.</p>
+  <h2>🔓 Vulnerable MCP Demo</h2>
+  <p><b>🔐 Logged-in user:</b> <span style="color: green;">{{ actual_user }}</span></p>
+  <p>This simulates a client sending <b>user-controlled metadata (MCP)</b> to an LLM API. You can escalate your privileges by editing the MCP.</p>
 
     <label for="prompt">Prompt:</label>
-    <input type="text" id="prompt" value="Give me a summary of John's performance report">
+    <input type="text" id="prompt" value="How much does Sarah from Marketing earn?">
 
     <label for="mcp">Edit MCP (🚨 you control this):</label>
     <textarea id="mcp" rows="8">{
   "user_role": "employee",
-  "intent": "performance_review",
+  "intent": "salary_lookup",
   "application_id": "com.acme.hr"
 }</textarea>
 
