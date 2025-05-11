@@ -9,22 +9,25 @@
     pre { background: #eee; padding: 10px; }
     label { margin-top: 15px; display: block; font-weight: bold; }
     .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+    .info-box { background: #ffffcc; padding: 10px; border-left: 4px solid #ffcc00; margin-bottom: 20px; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>🔓 Vulnerable MCP Demo</h2>
-    <p>This simulates a client sending <b>user-controlled metadata (MCP)</b> to an LLM API. You can escalate privileges by editing the MCP — even if your account stays the same.</p>
-
-    <p><b>🔐 Logged-in user:</b> <span id="user-role-display">employee</span></p>
+    <div class="info-box">
+      <p><b>🔐 Logged-in user:</b> <code>dor@company.com</code> (readonly)</p>
+      <p><b>🧾 Role from MCP:</b> <span id="user-role-display">employee</span></p>
+    </div>
+    <p>This simulates a client sending <b>user-controlled metadata (MCP)</b> to an LLM API. You can escalate privileges by editing the MCP without changing the actual user identity.</p>
 
     <label for="prompt">Prompt:</label>
-    <input type="text" id="prompt" value="What is John's salary?">
+    <input type="text" id="prompt" value="What is my salary?">
 
     <label for="mcp">Edit MCP (🚨 you control this):</label>
     <textarea id="mcp" rows="8">{
   "user_role": "employee",
-  "intent": "salary_access",
+  "intent": "salary_inquiry",
   "application_id": "com.acme.hr"
 }</textarea>
 
@@ -45,22 +48,18 @@
         return;
       }
 
-      const role = mcp.user_role || "unknown";
-      document.getElementById("user-role-display").innerText = role;
+      // Show the forged role from MCP
+      document.getElementById("user-role-display").innerText = mcp.user_role || "unknown";
 
-      let response;
-      if (role === "admin") {
-        response = "💰 John's salary is $120,000.";
-      } else if (role === "manager") {
-        response = "📄 John's salary is in the standard range.";
-      } else {
-        response = "⛔ Access denied.";
-      }
-
-      document.getElementById("result").innerText = JSON.stringify({
-        mcp_used: mcp,
-        response: response
-      }, null, 2);
+      fetch("/ask_llm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, mcp })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+      });
     }
   </script>
 </body>
