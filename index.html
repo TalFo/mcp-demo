@@ -13,17 +13,18 @@
 </head>
 <body>
   <div class="container">
-  <h2>🔓 Vulnerable MCP Demo</h2>
-  <p><b>🔐 Logged-in user:</b> <span style="color: green;">{{ actual_user }}</span></p>
-  <p>This simulates a client sending <b>user-controlled metadata (MCP)</b> to an LLM API. You can escalate your privileges by editing the MCP.</p>
+    <h2>🔓 Vulnerable MCP Demo</h2>
+    <p>This simulates a client sending <b>user-controlled metadata (MCP)</b> to an LLM API. You can escalate privileges by editing the MCP — even if your account stays the same.</p>
+
+    <p><b>🔐 Logged-in user:</b> <span id="user-role-display">employee</span></p>
 
     <label for="prompt">Prompt:</label>
-    <input type="text" id="prompt" value="How much does Sarah from Marketing earn?">
+    <input type="text" id="prompt" value="What is John's salary?">
 
     <label for="mcp">Edit MCP (🚨 you control this):</label>
     <textarea id="mcp" rows="8">{
   "user_role": "employee",
-  "intent": "salary_lookup",
+  "intent": "salary_access",
   "application_id": "com.acme.hr"
 }</textarea>
 
@@ -44,15 +45,22 @@
         return;
       }
 
-      fetch("/ask_llm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, mcp })
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("result").innerText = JSON.stringify(data, null, 2);
-      });
+      const role = mcp.user_role || "unknown";
+      document.getElementById("user-role-display").innerText = role;
+
+      let response;
+      if (role === "admin") {
+        response = "💰 John's salary is $120,000.";
+      } else if (role === "manager") {
+        response = "📄 John's salary is in the standard range.";
+      } else {
+        response = "⛔ Access denied.";
+      }
+
+      document.getElementById("result").innerText = JSON.stringify({
+        mcp_used: mcp,
+        response: response
+      }, null, 2);
     }
   </script>
 </body>
