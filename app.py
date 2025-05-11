@@ -1,14 +1,10 @@
-from flask import Flask, request, jsonify, render_template, session
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
-app.secret_key = "demo-secret"  # Needed for session
 
 @app.route('/')
 def index():
-    # Simulate a real logged-in user (hardcoded to 'employee')
-    if "user_role" not in session:
-        session["user_role"] = "employee"
-    return render_template('index.html', actual_user=session["user_role"])
+    return render_template('index.html')
 
 @app.route('/ask_llm', methods=['POST'])
 def ask_llm():
@@ -16,13 +12,13 @@ def ask_llm():
     prompt = data.get("prompt", "")
     mcp = data.get("mcp", {})
 
-    role = mcp.get("user_role", "user")  # The role the model believes
+    role = mcp.get("user_role", "user")
     if role == "admin":
-        response = "Sarah from Marketing earns $132,000 annually, plus a 15% bonus."
-    elif role == "hr":
-        response = "Sarah's salary is $132,000 per year."
+        response = "🚨 Salary: $180,000 plus bonus access."
+    elif role == "manager":
+        response = "📊 Salary: $120,000 (view-only)."
     else:
-        response = "You are not authorized to access employee salary information."
+        response = "⛔ Access denied. You are not allowed to view this information."
 
     return jsonify({
         "mcp_used": mcp,
