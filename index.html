@@ -9,25 +9,21 @@
     pre { background: #eee; padding: 10px; }
     label { margin-top: 15px; display: block; font-weight: bold; }
     .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
-    .info-box { background: #ffffcc; padding: 10px; border-left: 4px solid #ffcc00; margin-bottom: 20px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🔓 Vulnerable MCP Demo</h2>
-    <div class="info-box">
-      <p><b>🔐 Logged-in user:</b> <code>dor@company.com</code> (readonly)</p>
-      <p><b>🧾 Role from MCP:</b> <span id="user-role-display">employee</span></p>
-    </div>
-    <p>This simulates a client sending <b>user-controlled metadata (MCP)</b> to an LLM API. You can escalate privileges by editing the MCP without changing the actual user identity.</p>
+  <h2>🔓 Vulnerable MCP Demo</h2>
+  <p><b>🔐 Logged-in user:</b> <span style="color: green;">{{ actual_user }}</span></p>
+  <p>This simulates a client sending <b>user-controlled metadata (MCP)</b> to an LLM API. You can escalate your privileges by editing the MCP.</p>
 
     <label for="prompt">Prompt:</label>
-    <input type="text" id="prompt" value="What is my salary?">
+    <input type="text" id="prompt" value="How much does Sarah from Marketing earn?">
 
     <label for="mcp">Edit MCP (🚨 you control this):</label>
     <textarea id="mcp" rows="8">{
   "user_role": "employee",
-  "intent": "salary_inquiry",
+  "intent": "salary_lookup",
   "application_id": "com.acme.hr"
 }</textarea>
 
@@ -47,9 +43,6 @@
         alert("Invalid MCP JSON");
         return;
       }
-
-      // Show the forged role from MCP
-      document.getElementById("user-role-display").innerText = mcp.user_role || "unknown";
 
       fetch("/ask_llm", {
         method: "POST",
